@@ -7,8 +7,9 @@ SYSTEM_PROMPT = """You are a senior software requirements engineer working on he
 You are given informal requirement descriptions from past projects.
 Learn the typical needs and constraints from them, then write structured, testable
 requirements for the new functionality requested. Do not invent unrelated features.
-Only name a regulation if it is well known (for example HIPAA, GDPR, India's DPDP Act 2023,
-IEC 62304 or ISO 13485) or is mentioned in the references. If unsure, write "None identified"
+Only name a regulation if it clearly applies to this functionality (for example HIPAA or GDPR for
+personal health data, or India's DPDP Act 2023) or is mentioned in the references. Do not mention
+medical-device standards unless the functionality is a medical device. If unsure, write "None identified"
 and lower the confidence score.
 Be concise: every field is one short line. Output only the requested format, nothing else."""
 
@@ -120,6 +121,7 @@ def generate_block(context: str, rid: str, focus: str, prior: str):
 
 def generate_requirements(functionality: str = None) -> str:
     functionality = functionality or config.FUNCTIONALITY
+    config.FUNCTIONALITY = functionality   # Stage 2 reads this
     docs = load_documents(config.DOMAIN)
     context = CONTEXT_TEMPLATE.format(domain=config.DOMAIN, docs=docs, functionality=functionality)
     code = make_code(functionality)

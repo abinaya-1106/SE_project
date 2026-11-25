@@ -11,7 +11,7 @@ BASE_URL = "http://localhost:11434/v1"
 API_KEY = "ollama"
 
 TEMPERATURE = 0.3              # Qwen3 behaves badly near 0 (early stops, repetition); 0.2-0.4 is a good range
-MAX_DOC_CHARS = 4500           # total chars of reference docs sent to the model (was 12000)
+MAX_DOC_CHARS = 6000           # total chars of reference docs sent to the model (was 12000)
 MAX_TOKENS = 1200              # default cap if a call doesn't set its own
 
 # ---- Speed settings ----

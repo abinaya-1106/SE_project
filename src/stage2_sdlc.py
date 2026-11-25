@@ -39,13 +39,20 @@ PROFILES = {
 ANALYSIS_SYSTEM = """You are a software engineering analyst.
 You rate project characteristics using only evidence found in the requirements text."""
 
-ANALYSIS_TEMPLATE = """Software requirements (ID: statement):
+ANALYSIS_TEMPLATE = """Project: %%FUNC%%
+
+Software requirements (ID: statement):
 
 %%REQ%%
 
 TASK: Rate each characteristic below as "low", "medium" or "high" using ONLY evidence in the requirements.
 Give a very short evidence phrase (max 8 words) for each, citing requirement IDs where possible.
 Do not recommend an SDLC.
+
+The requirements list features only. For characteristics they cannot show (change frequency, release cadence,
+stakeholder availability, technical uncertainty, consequence of failure), use what is typical for this KIND of
+product: for example a consumer mobile app is updated often and a failure is an inconvenience, while software
+that controls a patient's treatment is safety-critical and changes rarely.
 
 For each characteristic, compare THIS project with the low / medium / high descriptions and pick the
 best match (project domain: %%DOMAIN%%). Different projects must get different ratings. Being in this domain
@@ -115,6 +122,27 @@ def compact_reqs(text: str) -> str:
     return "\n".join(out) if out else text[:2500]   # fallback if format was unexpected
 
 
+# "High" on these factors needs explicit evidence in the project text, otherwise it is capped at "medium".
+SAFETY_RE = re.compile(r"safety[- ]critical|patient safety|life[- ](?:critical|support|threatening)|dosage|infusion|"
+                       r"ventilator|pacemaker|implant|defibrillat|medical device|SaMD|injur", re.I)
+CERT_RE = re.compile(r"certif|regulatory approval|\bFDA\b|CDSCO|IEC ?62304|ISO ?13485|medical device|SaMD|\bMDR\b|clinical trial", re.I)
+GUARDS = [
+    ("regulatory_criticality", (CERT_RE,), "no certification or approval evidence"),
+    ("formal_verification_need", (SAFETY_RE, CERT_RE), "no safety-critical or certification evidence"),
+    ("failure_consequence", (SAFETY_RE,), "no patient-safety evidence"),
+]
+
+
+def apply_guards(ratings: dict, text: str) -> list:
+    capped = []
+    for key, patterns, note in GUARDS:
+        if ratings[key]["rating"] == "high" and not any(p.search(text) for p in patterns):
+            ratings[key]["rating"] = "medium"
+            ratings[key]["evidence"] += f" (capped to medium: {note})"
+            capped.append(key)
+    return capped
+
+
 def parse_analysis(raw: str) -> dict:
     data = {}
     try:
@@ -175,7 +203,8 @@ def short_characteristics(ratings: dict) -> str:
     return "\n".join(f"- {label}: {ratings[key]['rating']}" for key, label, _ in FACTORS)
 
 
-def choose_sdlc(requirements: str) -> str:
+def choose_sdlc(requirements: str, functionality: str = None) -> str:
+    functionality = functionality or getattr(config, "FUNCTIONALITY", "")
     compact = compact_reqs(requirements)
 
     # Step 2a: LLM rates the characteristics
@@ -183,9 +212,13 @@ def choose_sdlc(requirements: str) -> str:
     factor_text = "\n".join(f"- {key}: {desc}" for key, _, desc in FACTORS)
     prompt = (ANALYSIS_TEMPLATE.replace("%%REQ%%", compact)
               .replace("%%FACTORS%%", factor_text)
-              .replace("%%DOMAIN%%", config.DOMAIN))
+              .replace("%%DOMAIN%%", config.DOMAIN)
+              .replace("%%FUNC%%", functionality))
     raw = ask_llm(ANALYSIS_SYSTEM, prompt, json_mode=True, max_tokens=config.STAGE2A_MAX_TOKENS)
     ratings = parse_analysis(raw)
+    capped = apply_guards(ratings, functionality + "\n" + requirements)
+    if capped:
+        print("[Stage 2a] Capped to medium (no evidence for 'high'): " + ", ".join(capped))
     print("[Stage 2a] Ratings: " + ", ".join(f"{k}={v['rating']}" for k, v in ratings.items()))
 
     # Rule-based scoring (no LLM)
