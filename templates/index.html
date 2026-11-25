@@ -5,103 +5,233 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Requirements and SDLC Generator</title>
 <style>
-  body { font-family: Arial, sans-serif; max-width: 900px; margin: 30px auto; padding: 0 16px; color: #222; line-height: 1.55; }
-  h1 { border-bottom: 3px solid #2b6cb0; padding-bottom: 8px; }
-  label { font-weight: bold; display: block; margin-bottom: 6px; }
-  textarea { width: 100%; box-sizing: border-box; padding: 10px; font-size: 1em; border: 1px solid #aaa; border-radius: 4px; }
-  button { background: #2b6cb0; color: #fff; border: 0; padding: 10px 24px; font-size: 1em; border-radius: 4px; cursor: pointer; margin-top: 10px; }
-  button:disabled { background: #999; cursor: wait; }
-  #status { margin: 14px 0; font-style: italic; color: #555; }
-  #error { color: #b00020; font-weight: bold; }
-  h2.stage { background: #2b6cb0; color: #fff; padding: 8px 12px; border-radius: 4px; margin-top: 30px; }
-  .box { border: 1px solid #ddd; border-radius: 4px; padding: 4px 18px; background: #fff; }
-  .banner { background: #e6fffa; border-left: 6px solid #2c7a7b; padding: 12px 16px; font-size: 1.15em; margin: 16px 0; }
-  .hidden { display: none; }
-  table { border-collapse: collapse; width: 100%; }
-  th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
-  .approval { margin-top: 20px; padding: 12px 16px; background: #fffbea; border-left: 6px solid #d69e2e; }
-  .approval button { margin-right: 8px; }
+:root{--bg:#f4f6fb;--card:#fff;--ink:#1c2433;--muted:#667085;--line:#e3e8f0;--brand:#2b6cb0;--brand2:#1e4e8c;--chip:#eaf1fb;--ok:#16794c;--okbg:#e3f6ec;--warn:#9a6700;--warnbg:#fff4d6;--bad:#b42318;--badbg:#fde8e6;--shadow:0 1px 3px rgba(16,24,40,.08),0 4px 14px rgba(16,24,40,.05)}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1320;--card:#161c2b;--ink:#e7ebf3;--muted:#9aa5b8;--line:#263045;--brand:#6aa8ff;--brand2:#9cc4ff;--chip:#1e2842;--ok:#5fd39b;--okbg:#12342a;--warn:#f0c15a;--warnbg:#3a2f12;--bad:#ff8d82;--badbg:#3d1b18;--shadow:none}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:linear-gradient(120deg,#1e4e8c,#2b6cb0 55%,#3b8bd9);color:#fff;padding:26px 16px 30px}
+.wrap{max-width:1000px;margin:0 auto;padding:0 16px}
+header .wrap{padding:0}
+header h1{margin:0 0 4px;font-size:1.65em;letter-spacing:-.01em}
+header p{margin:0;opacity:.9}
+.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);padding:3px 11px;border-radius:99px;font-size:.82em;margin-top:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:#5ef0a0}
+main{margin-top:-18px;padding-bottom:50px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:18px 20px;margin-bottom:18px}
+label.t{font-weight:600;display:block;margin-bottom:8px}
+textarea{width:100%;min-height:96px;resize:vertical;padding:12px;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px}
+textarea:focus{outline:2px solid var(--brand);border-color:transparent}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px;align-items:center}
+.chips small{color:var(--muted);margin-right:2px}
+.chip{background:var(--chip);color:var(--brand2);border:1px solid var(--line);padding:4px 11px;border-radius:99px;font-size:.84em;cursor:pointer}
+.chip:hover{border-color:var(--brand)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.btn{background:var(--brand);color:#fff;border:0;padding:10px 22px;font:inherit;font-weight:600;border-radius:8px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+[data-theme] .btn{color:#fff}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.ghost{background:transparent;color:var(--brand);border:1px solid var(--line)}
+.btn.ok{background:#16794c}.btn.bad{background:#b42318}
+.hint{color:var(--muted);font-size:.85em}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:s 1s linear infinite;display:none}
+.btn:disabled .spin{display:inline-block}
+@keyframes s{to{transform:rotate(360deg)}}
+.steps{display:flex;gap:8px;margin:0 0 18px}
+.step{flex:1;padding:10px 12px;border:1px solid var(--line);background:var(--card);border-radius:10px;color:var(--muted);font-size:.9em;display:flex;gap:9px;align-items:center}
+.step b{width:24px;height:24px;border-radius:50%;background:var(--line);color:var(--muted);display:grid;place-items:center;font-size:.85em;flex:none}
+.step.active{border-color:var(--brand);color:var(--ink)}.step.active b{background:var(--brand);color:#fff;animation:p 1.4s infinite}
+.step.done{color:var(--ink)}.step.done b{background:var(--ok);color:#fff}
+@keyframes p{50%{box-shadow:0 0 0 5px rgba(43,108,176,.18)}}
+#timer{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
+#error{color:var(--bad);background:var(--badbg);border-radius:8px;padding:10px 14px;margin-bottom:16px;display:none;font-weight:600}
+.hidden{display:none!important}
+h2.sec{font-size:1.15em;margin:6px 0 12px;display:flex;align-items:center;gap:10px}
+h2.sec .n{background:var(--brand);color:#fff;border-radius:6px;padding:1px 9px;font-size:.8em}
+h3.grp{margin:18px 0 10px;font-size:.95em;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:14px}
+@media (max-width:560px){.grid{grid-template-columns:1fr}.steps{flex-direction:column}}
+.req{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card)}
+.req .top{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.rid{font:600 .85em ui-monospace,Menlo,Consolas,monospace;color:var(--brand2);background:var(--chip);padding:2px 8px;border-radius:6px}
+.stmt{font-weight:600;margin:0 0 10px}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.88em}
+dt{color:var(--muted)}dd{margin:0}
+.pill{display:inline-block;padding:1px 9px;border-radius:99px;font-size:.78em;font-weight:600;margin-left:4px;background:var(--chip);color:var(--brand2)}
+.pill.high{background:var(--badbg);color:var(--bad)}.pill.medium{background:var(--warnbg);color:var(--warn)}.pill.low{background:var(--okbg);color:var(--ok)}
+.hero{display:flex;align-items:center;gap:16px;background:linear-gradient(120deg,var(--okbg),var(--chip));border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:16px;flex-wrap:wrap}
+.hero .lbl{color:var(--muted);font-size:.8em;text-transform:uppercase;letter-spacing:.06em}
+.hero .nm{font-size:1.6em;font-weight:700}
+.hero .sc{margin-left:auto;text-align:center;font-size:2em;font-weight:700;color:var(--ok);line-height:1}
+.hero .sc small{display:block;font-size:.35em;color:var(--muted);font-weight:500;margin-top:4px}
+#out2 h2{font-size:1.05em;margin:22px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+#out2 p,#out2 li{margin:6px 0}
+#out2 em{color:var(--muted);font-size:.88em}
+.bars{display:grid;gap:7px}
+.bar{display:grid;grid-template-columns:22px 170px 1fr 46px;gap:10px;align-items:center;font-size:.92em}
+.bar .rk{color:var(--muted);text-align:center}
+.track{background:var(--line);border-radius:99px;height:12px;overflow:hidden}
+.fill{height:100%;border-radius:99px;background:var(--brand);width:0;transition:width .9s ease}
+.bar.first .fill{background:var(--ok)}.bar.first .nm{font-weight:700}
+.bar .pc{text-align:right;font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88em}
+th,td{border-bottom:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600}
+.appr{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--warnbg);border-left:5px solid #d69e2e;border-radius:8px;padding:14px 16px}
+.appr .st{font-weight:700}.appr small{color:var(--muted);flex-basis:100%}
+.appr.accepted{background:var(--okbg);border-color:#16794c}.appr.rejected{background:var(--badbg);border-color:#b42318}
 </style>
 </head>
 <body>
-<h1>Requirements and SDLC Generator</h1>
-<p>Model: <b>{{ model }}</b> (running locally). Describe a functionality, and the system will generate requirements, then recommend an SDLC model.</p>
+<header><div class="wrap">
+  <h1>Requirements and SDLC Generator</h1>
+  <p>Describe a functionality. The system writes structured requirements, rates the project and ranks suitable SDLC models.</p>
+  <span class="badge"><span class="dot"></span>{{ model }} &middot; running locally</span>
+</div></header>
 
-<label for="func">Functionality</label>
-<textarea id="func" rows="3" placeholder="e.g. online appointment booking for patients and doctors"></textarea>
-<button id="run" onclick="runPipeline()">Run</button>
-
-<div id="status"></div>
-<div id="error"></div>
-
-<div id="s1" class="hidden">
-  <h2 class="stage">Stage 1: Generated Requirements (with reasoning)</h2>
-  <div id="out1" class="box"></div>
-</div>
-
-<div id="s2" class="hidden">
-  <h2 class="stage">Stage 2: SDLC Ranking, Justification and Workflow</h2>
-  <div id="banner"></div>
-  <div id="out2" class="box"></div>
-  <div class="approval">
-    <b>Approval status:</b> <span id="appr">Pending human approval</span><br>
-    Required approvers: Project Manager, Software Architect, Security Team, Compliance Officer<br>
-    <button onclick="setStatus('Accepted')">Accept</button>
-    <button onclick="setStatus('Rejected')">Reject</button>
-    <button onclick="runPipeline()">Regenerate</button>
+<main class="wrap">
+  <div class="card">
+    <label class="t" for="func">Functionality</label>
+    <textarea id="func" placeholder="e.g. online appointment booking for patients and doctors"></textarea>
+    <div class="chips"><small>Try an example:</small><span id="chips"></span></div>
+    <div class="row">
+      <button class="btn" id="run" onclick="runPipeline()"><span class="spin"></span><span id="runlbl">Generate</span></button>
+      <span class="hint">Ctrl + Enter to run. Add details such as safety, regulation, release frequency and user availability for better SDLC results.</span>
+    </div>
   </div>
-</div>
+
+  <div id="steps" class="steps hidden">
+    <div class="step" id="st1"><b>1</b>Requirements</div>
+    <div class="step" id="st2"><b>2</b>SDLC analysis</div>
+    <div class="step" id="st3"><b>3</b>Review</div>
+    <span id="timer"></span>
+  </div>
+  <div id="error"></div>
+
+  <section id="s1" class="card hidden">
+    <h2 class="sec"><span class="n">1</span>Generated requirements</h2>
+    <div id="out1"></div>
+    <div class="row"><button class="btn ghost" onclick="copyReqs(this)">Copy as markdown</button></div>
+  </section>
+
+  <section id="s2" class="card hidden">
+    <h2 class="sec"><span class="n">2</span>SDLC recommendation</h2>
+    <div id="hero"></div>
+    <div id="out2"></div>
+    <div id="appr" class="appr">
+      <span>Approval status: <span class="st" id="apprTxt">Pending human approval</span></span>
+      <button class="btn ok" onclick="setStatus('Accepted')">Accept</button>
+      <button class="btn bad" onclick="setStatus('Rejected')">Reject</button>
+      <button class="btn ghost" onclick="runPipeline()">Regenerate</button>
+      <small>Required approvers: Project Manager, Software Architect, Security Team, Compliance Officer. The AI result is advisory.</small>
+    </div>
+  </section>
+</main>
 
 <script>
-function setStatus(s) {
-  document.getElementById("appr").textContent = s;
-}
+const EXAMPLES = [
+ ["Waterfall","Hospital staff payroll and leave management system. Requirements are fully defined and signed off by the HR department before development starts and are not expected to change. It is a small standalone internal system for HR clerks, with no new technology, and releases happen only once a year after full documentation and testing."],
+ ["V-Model","Infusion pump control software for hospital wards that calculates and delivers medication doses. Patient safety is critical because a failure can injure or kill a patient, so every requirement must be formally verified and validated and the software needs IEC 62304 certification and regulatory approval. Requirements are fixed, well defined and rarely change, and the technology is proven."],
+ ["Spiral","AI-based medical image diagnosis platform for hospitals using a new deep-learning approach whose feasibility is unproven. It is a large, complex system with many modules and user roles, high technical uncertainty and sensitive patient data, and wrong results could affect patient safety, so risks must be analysed and prototyped repeatedly before each stage."],
+ ["Agile","Mobile app for community wellness events such as yoga classes, walking groups and health talks, where members browse and sign up for events. Requirements are vague and will change as users give feedback, the product owner and members are available every sprint to review, new features are released every one to two weeks, and the app stores no medical records so a failure is only an inconvenience."],
+ ["DevSecOps","Telehealth platform that combines video consultations with online payments for patients and doctors. It handles highly sensitive patient and card data, so security must be built into every release with automated security testing and deployment pipelines, and updates are released continuously, several times a week, as new payment methods and features are added. Core requirements are fairly stable and there is no formal certification requirement."],
+ ["Agile-V Hybrid","Insulin dose recommendation app for diabetic patients, classified as software as a medical device, which needs IEC 62304 compliance and regulatory approval. Dose errors can harm patients, so the safety-critical functions need documented verification, but new features and algorithm improvements are developed in short iterations with clinicians reviewing regularly."],
+ ["Agile-DevSecOps","Patient portal where patients view test results, book appointments and message doctors. Requirements evolve every sprint based on patient and doctor feedback, new versions are released weekly, the product team and clinic staff are available for continuous feedback, and because it holds sensitive health records, security checks are automated in the pipeline. No medical-device certification is involved."]
+];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let lastMd = "", timerId = null;
 
-async function post(url, body) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
+$("chips").innerHTML = EXAMPLES.map((e, i) => `<span class="chip" onclick="pick(${i})">${e[0]}</span>`).join(" ");
+function pick(i){ $("func").value = EXAMPLES[i][1]; $("func").focus(); }
+$("func").addEventListener("keydown", e => { if (e.ctrlKey && e.key === "Enter") runPipeline(); });
+
+function setStatus(s){
+  $("apprTxt").textContent = s;
+  $("appr").className = "appr " + (s === "Accepted" ? "accepted" : s === "Rejected" ? "rejected" : "");
+}
+function setStep(n){
+  [1,2,3].forEach(i => $("st"+i).className = "step" + (i < n ? " done" : i === n ? " active" : ""));
+}
+function startTimer(){
+  const t0 = Date.now();
+  timerId = setInterval(() => { const s = Math.floor((Date.now()-t0)/1000); $("timer").textContent = "Elapsed " + Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); }, 500);
+}
+function copyReqs(btn){
+  navigator.clipboard.writeText(lastMd).then(() => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = "Copy as markdown", 1500); });
+}
+async function post(url, body){
+  const res = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Request failed");
   return data;
 }
 
-async function runPipeline() {
-  const func = document.getElementById("func").value.trim();
-  const btn = document.getElementById("run");
-  const status = document.getElementById("status");
-  const error = document.getElementById("error");
+function pill(v){ const k = String(v||"").toLowerCase().trim(); return `<span class="pill ${["high","medium","low"].includes(k)?k:""}">${esc(v||"-")}</span>`; }
+function parseReqs(md){
+  return md.split(/^###\s+/m).slice(1).map(ch => {
+    const lines = ch.split("\n"), f = {};
+    lines.slice(1).forEach(l => { const m = l.match(/^- \*\*(.+?):\*\*\s*(.*)$/); if (m) f[m[1]] = m[2]; });
+    return {id: lines[0].trim(), f};
+  });
+}
+function reqCard(r){
+  const f = r.f, rows = ["Category","Source stakeholder","Acceptance criteria","Applicable regulations","Confidence score"]
+    .map(k => `<dt>${k}</dt><dd>${esc(f[k]||"-")}</dd>`).join("");
+  return `<div class="req"><div class="top"><span class="rid">${esc(r.id)}</span><span>Priority${pill(f["Priority"])} Risk${pill(f["Risk level"])}</span></div>
+    <p class="stmt">${esc(f["Requirement statement"]||"-")}</p><dl>${rows}</dl></div>`;
+}
+function renderReqs(md, html){
+  const reqs = parseReqs(md);
+  if (!reqs.length) { $("out1").innerHTML = html; return; }
+  const fr = reqs.filter(r => !r.id.startsWith("NFR")), nfr = reqs.filter(r => r.id.startsWith("NFR"));
+  const grp = (t, a) => a.length ? `<h3 class="grp">${t} (${a.length})</h3><div class="grid">${a.map(reqCard).join("")}</div>` : "";
+  $("out1").innerHTML = grp("Functional requirements", fr) + grp("Non-functional requirements", nfr);
+}
 
-  error.textContent = "";
+function renderSdlc(html, sdlc){
+  const m = (sdlc||"").match(/^(.*?)\s*\(suitability score\s*(\d+)%\)/i);
+  $("hero").innerHTML = sdlc ? `<div class="hero"><div><div class="lbl">Recommended SDLC</div><div class="nm">${esc(m ? m[1] : sdlc)}</div></div>${m ? `<div class="sc">${m[2]}%<small>suitability</small></div>` : ""}</div>` : "";
+  const c = $("out2"); c.innerHTML = html;
+  [...c.querySelectorAll("p")].filter(p => /^Recommended SDLC/i.test(p.textContent)).forEach(p => p.remove());
+  const ha = [...c.querySelectorAll("h2")].find(h => /Human Approval/i.test(h.textContent));
+  if (ha) { while (ha.nextSibling) ha.nextSibling.remove(); ha.remove(); }
+  c.querySelectorAll("table").forEach(t => {
+    const heads = [...t.querySelectorAll("th")].map(h => h.textContent);
+    const rows = [...t.querySelectorAll("tbody tr")].map(tr => [...tr.children].map(td => td.textContent.trim()));
+    if (heads.includes("SDLC model")) {
+      const bars = document.createElement("div"); bars.className = "bars";
+      bars.innerHTML = rows.map((r, i) => `<div class="bar ${i?"":"first"}"><span class="rk">${esc(r[0])}</span><span class="nm">${esc(r[1])}</span><div class="track"><div class="fill" data-w="${parseInt(r[2])||0}"></div></div><span class="pc">${esc(r[2])}</span></div>`).join("");
+      t.replaceWith(bars);
+    } else if (heads.includes("Characteristic")) {
+      const w = document.createElement("div"); w.className = "scroll";
+      t.querySelectorAll("tbody tr").forEach(tr => { const td = tr.children[1]; if (td) td.innerHTML = pill(td.textContent); });
+      t.replaceWith(w); w.appendChild(t);
+    }
+  });
+  requestAnimationFrame(() => setTimeout(() => c.querySelectorAll(".fill").forEach(f => f.style.width = f.dataset.w + "%"), 50));
+}
+
+async function runPipeline(){
+  const func = $("func").value.trim(), btn = $("run");
+  $("error").style.display = "none";
   setStatus("Pending human approval");
-  document.getElementById("s1").classList.add("hidden");
-  document.getElementById("s2").classList.add("hidden");
-
-  if (!func) { error.textContent = "Please enter a functionality."; return; }
-
-  btn.disabled = true;
+  ["s1","s2"].forEach(i => $(i).classList.add("hidden"));
+  if (!func) { $("error").textContent = "Please enter a functionality."; $("error").style.display = "block"; return; }
+  btn.disabled = true; $("runlbl").textContent = "Working...";
+  $("steps").classList.remove("hidden"); setStep(1); clearInterval(timerId); startTimer();
   try {
-    status.textContent = "Stage 1: generating requirements... (this can take a few minutes)";
-    const r1 = await post("/stage1", { functionality: func });
-    document.getElementById("out1").innerHTML = r1.html;
-    document.getElementById("s1").classList.remove("hidden");
-
-    status.textContent = "Stage 2: analysing requirements and choosing an SDLC...";
-    const r2 = await post("/stage2", { requirements: r1.markdown });
-    document.getElementById("banner").innerHTML = r2.sdlc
-      ? '<div class="banner"><b>Recommended SDLC:</b> ' + r2.sdlc.replace(/</g, "&lt;") + "</div>"
-      : "";
-    document.getElementById("out2").innerHTML = r2.html;
-    document.getElementById("s2").classList.remove("hidden");
-
-    status.textContent = "Done.";
+    const r1 = await post("/stage1", {functionality: func});
+    lastMd = r1.markdown; renderReqs(r1.markdown, r1.html);
+    $("s1").classList.remove("hidden"); setStep(2);
+    const r2 = await post("/stage2", {requirements: r1.markdown});
+    renderSdlc(r2.html, r2.sdlc);
+    $("s2").classList.remove("hidden"); setStep(4);
+    $("st3").className = "step active"; $("s2").scrollIntoView({behavior:"smooth", block:"start"});
   } catch (e) {
-    error.textContent = e.message;
-    status.textContent = "";
+    $("error").textContent = e.message; $("error").style.display = "block"; $("steps").classList.add("hidden");
   } finally {
-    btn.disabled = false;
+    clearInterval(timerId); btn.disabled = false; $("runlbl").textContent = "Generate";
   }
 }
 </script>

@@ -186,3 +186,21 @@ keep `MAX_DOC_CHARS` modest, and keep the most important content at the top of e
   `data/healthcare/SOURCES.md`). Verify regulatory details against the official sources before citing.
 - Outputs are advisory and must be approved by the Project Manager, Software Architect, Security Team
   and Compliance Officer.
+
+
+
+
+
+Hospital staff payroll and leave management system. Requirements are fully defined and signed off by the HR department before development starts and are not expected to change. It is a small standalone internal system for HR clerks, with no new technology, and releases happen only once a year after full documentation and testing.
+
+Infusion pump control software for hospital wards that calculates and delivers medication doses. Patient safety is critical because a failure can injure or kill a patient, so every requirement must be formally verified and validated and the software needs IEC 62304 certification and regulatory approval. Requirements are fixed, well defined and rarely change, and the technology is proven.
+
+AI-based medical image diagnosis platform for hospitals using a new deep-learning approach whose feasibility is unproven. It is a large, complex system with many modules and user roles, high technical uncertainty and sensitive patient data, and wrong results could affect patient safety, so risks must be analysed and prototyped repeatedly before each stage.
+
+Mobile app for community wellness events such as yoga classes, walking groups and health talks, where members browse and sign up for events. Requirements are vague and will change as users give feedback, the product owner and members are available every sprint to review, new features are released every one to two weeks, and the app stores no medical records so a failure is only an inconvenience.
+
+Telehealth platform that combines video consultations with online payments for patients and doctors. It handles highly sensitive patient and card data, so security must be built into every release with automated security testing and deployment pipelines, and updates are released continuously, several times a week, as new payment methods and features are added. Core requirements are fairly stable and there is no formal certification requirement.
+
+Insulin dose recommendation app for diabetic patients, classified as software as a medical device, which needs IEC 62304 compliance and regulatory approval. Dose errors can harm patients, so the safety-critical functions need documented verification, but new features and algorithm improvements are developed in short iterations with clinicians reviewing regularly.
+
+Patient portal where patients view test results, book appointments and message doctors. Requirements evolve every sprint based on patient and doctor feedback, new versions are released weekly, the product team and clinic staff are available for continuous feedback, and because it holds sensitive health records, security checks are automated in the pipeline. No medical-device certification is involved.
